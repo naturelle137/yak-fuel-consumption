@@ -12,9 +12,10 @@ a lamp switch is a precise fuel-level fix, "which lamp is on" is not.
 
 ## Workflow
 
-1. **Print** `kneeboard/kneeboard.html` from a browser (A4 landscape,
-   duplex "flip on long edge", 100 % scale, no margins). Cut along the marks →
-   three 99 × 173 mm kneeboard cards per sheet.
+1. **Print** `kneeboard/kneeboard.pdf` — or `kneeboard/kneeboard.html` from a
+   browser (A4 landscape, duplex "flip on **short** edge", 100 % scale, no
+   margins). The short-edge flip is what keeps the backs upright behind the
+   fronts. Cut along the marks → three 99 × 173 mm kneeboard cards per sheet.
 2. **Fly** the sortie per the flight programme (`docs/sortie-schema.md`),
    filling the card as you go. Keep SkyDemon logging the whole time.
 3. **Export** the SkyDemon logs. Only `.gpx` and `.txt` are needed
