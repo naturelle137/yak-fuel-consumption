@@ -47,9 +47,14 @@ Scripts run on Python 3 with `numpy` and `pyyaml`. Optional:
 
 ## Kneeboard card size
 
+The template is cut for the **Design 4 Pilots KB-1 Mini** kneeboard.
+
 Cards are 99 mm wide, not 100: three across an A4 landscape sheet
 (297 mm) can be at most 99 mm each. Height is 173 mm (within the
 170–175 mm kneeboard window).
+
+For a different kneeboard, check its window against those dimensions
+before printing — the card size is set in `kneeboard/kneeboard.html`.
 
 ## Data privacy
 
