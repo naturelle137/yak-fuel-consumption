@@ -24,7 +24,12 @@ configuration: `model-config.yaml`.
    field into a draft `sortie.yaml` (see schema). Note per-field
    confidence; mark anything you cannot read confidently as `?`.
    Handwriting rules: times are UTC hh:mm; pump litres use a decimal
-   comma; lamp transitions read `time · tank L/R · from→to · other`.
+   comma. The back card has one pre-printed transition list per tank
+   (60→50 … 15→12) — a filled time next to a transition is that tank's
+   lamp event; the third cell is what the OTHER tank showed at that
+   moment. Empty rows are simply transitions that didn't occur. The
+   circled 60s at the top confirm full tanks before engine start
+   (record as `refuel_open.brim: true` confirmation, not an event).
 
 3. **Run the GPX analysis**:
    `python3 scripts/gpx_phases.py incoming/ -o incoming/derived.json`
