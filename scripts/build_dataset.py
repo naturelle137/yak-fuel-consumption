@@ -55,13 +55,18 @@ def main():
         w = csv.writer(f)
         w.writerow(["sortie", "date", "from", "to", "target_setting",
                     "airborne_min", "refuel_open_l", "refuel_close_l",
-                    "opens_block", "lamp_events", "remarks"])
+                    "close_brim", "close_lamps", "opens_block",
+                    "lamp_events", "remarks"])
         for p in plans:
             raw = p["raw"]
+            close = p["close"] or {}
+            lamps = close.get("lamps") or {}
             w.writerow([p["id"], p["date"], raw.get("from"), raw.get("to"),
                         p["target"], p["airborne_min"],
                         (raw.get("refuel_open") or {}).get("litres"),
-                        p["close_litres"], int(p["opens_block"]),
+                        close.get("litres"), close.get("brim"),
+                        (f"{lamps.get('left')}+{lamps.get('right')}"
+                         if lamps else ""), int(p["opens_block"]),
                         len(raw.get("lamp_events", [])),
                         (raw.get("remarks") or "").strip()])
 

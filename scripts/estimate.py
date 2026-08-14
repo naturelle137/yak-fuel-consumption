@@ -72,6 +72,12 @@ class Model:
             self.lamp_delta[lamp] = self.rng.uniform(0, self.delta_max, self.n)
         return self.lamp_delta[lamp]
 
+    def lamp_up(self, lamp):
+        """Next value up the per-tank lamp scale (45 for 40); None at top."""
+        scale = sorted(self.cfg["aircraft"]["lamp_scale"])
+        i = scale.index(lamp)
+        return scale[i + 1] if i + 1 < len(scale) else None
+
     def gauge_pen(self, fuel, s):
         lo, hi = s - self.slack_lo, s + self.slack_hi
         z = np.where(fuel < lo, -0.5 * ((fuel - lo) / self.sig_g) ** 2, 0.0)
@@ -168,10 +174,26 @@ class Model:
 
                 self.per_sortie_burn[plan["id"]] = sortie_start_fuel - fuel_end
                 fuel = fuel_end
-            if block["close"] is not None:
+            close = block["close"]
+            if close is not None and close["brim"]:
                 burn_total = f0 - fuel
-                self.logw += -0.5 * ((burn_total - block["close"])
+                self.logw += -0.5 * ((burn_total - close["litres"])
                                      / self.sig_refuel) ** 2
+            elif close is not None:
+                # partial top-up: post-refuel state pinned by the lamps.
+                # Lamp v showing means the tank is between the (early)
+                # v-switch and the next switch up the scale; assumes the
+                # filling-direction switch point equals the draining one.
+                after = fuel + close["litres"]
+                lo, hi = 0.0, 0.0
+                for v in (close["lamps"]["left"], close["lamps"]["right"]):
+                    lo = lo + v + self.delta(v)
+                    up = self.lamp_up(v)
+                    if up is None:      # top lamp: bounded by tank capacity
+                        hi = hi + self.cfg["aircraft"]["full_fuel_clip_l"][1] / 2
+                    else:
+                        hi = hi + up + self.delta(up)
+                self.logw += self.soft_interval_pen(after, lo, hi, self.sig_g)
 
         # ordering constraints (only pairs where both settings are active;
         # 'between' priors are ordered by construction)
@@ -270,6 +292,8 @@ def main():
     lines.append("| Sortie | Burn L | 90 % CI | L per airborne h |")
     lines.append("|---|---|---|---|")
     for plan in plans:
+        if not plan["phases"]:          # refuel-only closure record
+            continue
         b = model.per_sortie_burn[plan["id"]]
         m, med, (lo, hi) = model.post(b)
         rate = med / (plan["airborne_min"] / 60.0)

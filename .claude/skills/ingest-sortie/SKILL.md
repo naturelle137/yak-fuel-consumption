@@ -39,8 +39,16 @@ configuration: `model-config.yaml`.
    - takeoff/landing times: kneeboard vs `derived.json` (GPX truth, ±1 min)
    - engine on/off: kneeboard vs the first/last `.txt` summary
    - block start/end must lie inside the airborne window
+   - FUEL AFTER: either the brim box is ticked OR the L/R lamp cells are
+     filled — if lamps, record
+     `refuel_close: {litres: .., brim: false, lamps: {left: .., right: ..}}`
    - closing pump litres vs a rough burn estimate
-     (`data/results.md` rates × phase times) — flag if off by > 15 L
+     (`data/results.md` rates × phase times) — flag if off by > 15 L for
+     a brim close, > 25 L for a partial top-up (lamps pin the state only
+     to ~±5 L). Remind the user: if they brim the tanks later without an
+     intervening co-owner flight, a tiny refuel-only record
+     (`type: refuel-closure`, see docs/sortie-schema.md) makes this
+     sortie's closure exact retroactively.
    - lamp transition times must be strictly increasing, lamp values must
      descend along the tank's scale (60 50 45 40 35 30 25 20 15 12)
 

@@ -127,15 +127,29 @@ def _plan_from_times(s, d, cfg):
 
 
 def normalize(s, sortie_dir, cfg):
-    d = None
-    dj = sortie_dir / "derived.json"
-    if dj.is_file():
-        import json
-        d = json.loads(dj.read_text())
-    if "estimation" in s:
-        phases, obs, airborne = _plan_from_estimation(s, cfg)
+    if s.get("type") == "refuel-closure":
+        phases, obs, airborne = [], [], 0.0
     else:
-        phases, obs, airborne = _plan_from_times(s, d, cfg)
+        d = None
+        dj = sortie_dir / "derived.json"
+        if dj.is_file():
+            import json
+            d = json.loads(dj.read_text())
+        if "estimation" in s:
+            phases, obs, airborne = _plan_from_estimation(s, cfg)
+        else:
+            phases, obs, airborne = _plan_from_times(s, d, cfg)
+
+    rc = s.get("refuel_close") or {}
+    close = None
+    if rc.get("litres") is not None:
+        close = {"litres": rc["litres"],
+                 "brim": bool(rc.get("brim", False)),
+                 "lamps": rc.get("lamps")}
+        if not close["brim"] and not close["lamps"]:
+            raise ValueError(
+                f"sortie {s.get('sortie')}: refuel_close needs either "
+                "brim: true or lamps: {left: .., right: ..}")
     return {
         "id": str(s["sortie"]),
         "date": str(s["date"]),
@@ -144,7 +158,8 @@ def normalize(s, sortie_dir, cfg):
         "obs": obs,
         "airborne_min": airborne,
         "opens_block": bool(s.get("refuel_open", {}).get("brim")),
-        "close_litres": (s.get("refuel_close") or {}).get("litres"),
+        "unrecorded_before": bool(s.get("unrecorded_flights_before")),
+        "close": close,
         "raw": s,
     }
 
@@ -155,15 +170,21 @@ def load_plans():
 
 
 def group_blocks(plans):
-    """Group consecutive sorties into refuel-closed blocks."""
+    """Group consecutive sorties into refuel-closed blocks.
+
+    A block starts at a brim-full refuel_open and ends at the next
+    refuel_close (brim => exact anchor, else lamp-interval anchor).
+    A new brim-open or an 'unrecorded_flights_before' flag leaves the
+    previous block unclosed (its gauge/lamp observations still count).
+    """
     blocks, cur = [], []
     for p in plans:
-        if p["opens_block"] and cur:
+        if (p["opens_block"] or p["unrecorded_before"]) and cur:
             blocks.append({"plans": cur, "close": None})
             cur = []
         cur.append(p)
-        if p["close_litres"] is not None:
-            blocks.append({"plans": cur, "close": p["close_litres"]})
+        if p["close"] is not None:
+            blocks.append({"plans": cur, "close": p["close"]})
             cur = []
     if cur:
         blocks.append({"plans": cur, "close": None})

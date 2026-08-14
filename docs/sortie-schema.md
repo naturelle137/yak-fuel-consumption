@@ -27,11 +27,17 @@ refuel_open:                  # fill-to-full BEFORE engine start
   pump: "EDFM Avgas"
   spot: "GAT row 2"
 
-refuel_close:                 # fill-to-full AFTER shutdown; omit if none
-  litres: 61.4                # = total burn of everything since refuel_open
-  brim: true
+refuel_close:                 # refuel AFTER shutdown; omit if none
+  litres: 61.4                # pump reading
+  brim: true                  # filled to the brim reference again
   same_pump: true
   same_spot: true
+
+# Partial top-up variant (hangar policy: plane goes back with 40+40 L):
+# not an exact closure — the post-refuel state is only pinned by the
+# lamps, i.e. each tank is between its shown lamp's (early) switch point
+# and the next one up (~40…50 L until the offsets are calibrated).
+# refuel_close: {litres: 38.5, brim: false, lamps: {left: 40, right: 40}}
 
 times:                        # all UTC hh:mm, from the kneeboard
   engine_start: "08:01"
@@ -79,10 +85,23 @@ live in `model-config.yaml`.
 balances it against the refuel closures:
 
 - **Closure blocks**: a block starts at a sortie whose `refuel_open` is
-  brim-full and ends at the next `refuel_close`; the pump litres equal the
-  block's total burn (±1.5 L). Several sorties may share one closure
-  (e.g. no refuel between two flights). A sortie chain without a closing
-  refuel is still used — via its gauge/lamp observations only.
+  brim-full and ends at the next `refuel_close`. A brim close makes the
+  pump litres equal the block's total burn (±1.5 L); a partial top-up
+  with `lamps:` is a soft anchor (~±5 L) on the post-refuel state.
+  Several sorties may share one closure (e.g. no refuel between two
+  flights). A sortie chain without a closing refuel is still used — via
+  its gauge/lamp observations only.
+- **Refuel-only record**: a brim fill done later without a test flight
+  still closes the open block *exactly*, provided every flight since the
+  block opened is recorded. Minimal file:
+  `{type: refuel-closure, sortie: 20260823-R1, date: 2026-08-23,`
+  `refuel_close: {litres: 41.0, brim: true}}`
+  So: leave the plane at 40+40 after the test, and when you brim it
+  before the next flight, write down the pump litres — that one number
+  retroactively turns the soft closure into a hard one.
+- **`unrecorded_flights_before: true`** on a record means someone else
+  flew (and refuelled) in between — the previous block is left unclosed
+  rather than corrupted.
 - **Lamp transitions** are precise per-tank fixes: at the moment lamp
   `from→to` switches, that tank holds `to + δ(to)` litres, where the
   early-switch offset `δ ∈ [0…10] L` is a calibration parameter *shared
