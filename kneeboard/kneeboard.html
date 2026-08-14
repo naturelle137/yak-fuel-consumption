@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Yak-52 Fuel Test Kneeboard</title>
+<style>
+  /* ================= print geometry =================
+     A4 landscape 297 x 210 mm, three 99 x 173 mm cards side by side.
+     Print at 100% scale, margins "none", duplex "flip on SHORT edge".
+     Cut on the dashed lines. */
+  @page { size: A4 landscape; margin: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #fff; color: #000;
+               font-family: "Helvetica Neue", Arial, sans-serif; }
+
+  .sheet { width: 297mm; height: 210mm; position: relative;
+           page-break-after: always; overflow: hidden; }
+  .card  { position: absolute; top: 18.5mm; width: 99mm; height: 173mm; }
+  .card.c0 { left: 0; }  .card.c1 { left: 99mm; }  .card.c2 { left: 198mm; }
+
+  .cut-v { position: absolute; top: 0; height: 210mm; width: 0;
+           border-left: 0.15mm dashed #999; }
+  .cut-h { position: absolute; left: 0; width: 297mm; height: 0;
+           border-top: 0.15mm dashed #999; }
+  .waste-note { position: absolute; width: 297mm; text-align: center;
+                font-size: 6pt; color: #888; }
+
+  /* ================= card content ================= */
+  .inner { position: absolute; inset: 2.5mm; display: flex;
+           flex-direction: column; gap: 1.2mm; }
+
+  .cardhead { display: flex; justify-content: space-between;
+              align-items: baseline; }
+  .cardhead .t { font-size: 9pt; font-weight: 700; letter-spacing: 0.3mm; }
+  .cardhead .side { font-size: 6.5pt; color: #444; }
+
+  .sec { border: 0.35mm solid #000; border-radius: 1mm; padding: 0.9mm 1.5mm; }
+  .sec h2 { font-size: 6.5pt; font-weight: 700; letter-spacing: 0.2mm;
+            text-transform: uppercase; margin-bottom: 1mm; }
+  .sec h2 .hint { font-weight: 400; text-transform: none; color: #555; }
+
+  .row { display: flex; align-items: flex-end; gap: 1.5mm; }
+  .row + .row { margin-top: 1.2mm; }
+
+  .f { display: flex; flex-direction: column; flex: none; }
+  .f .lbl { font-size: 5.5pt; color: #333; margin-bottom: 0.4mm;
+            white-space: nowrap; }
+  .box { border: 0.25mm solid #000; height: 7mm; background: #fff; }
+  .grow { flex: 1 1 0; }
+
+  /* comb fields: one cell per character */
+  .comb { display: flex; flex: none; }
+  .comb .cell { width: 4.6mm; height: 7mm; border: 0.25mm solid #000;
+                border-left-width: 0; flex: none; }
+  .comb .cell:first-child { border-left-width: 0.25mm; }
+  .comb .sepc { width: 2.2mm; height: 7mm; border: none; display: flex;
+                align-items: flex-end; justify-content: center;
+                font-size: 8pt; }
+
+  .chk { display: inline-flex; align-items: center; gap: 1mm;
+         font-size: 6.5pt; white-space: nowrap; }
+  .chk .cb { width: 3.2mm; height: 3.2mm; border: 0.3mm solid #000;
+             display: inline-block; flex: none; }
+
+  /* target settings grid */
+  .tgt { display: grid; grid-template-columns: 1fr 1fr; gap: 0.9mm 2mm; }
+  .tgt .chk .set { font-weight: 700; }
+  .tgt .chk .pow { color: #333; }
+
+  /* tables */
+  table { border-collapse: collapse; width: 100%; table-layout: fixed; }
+  th { font-size: 5.5pt; font-weight: 700; border: 0.25mm solid #000;
+       padding: 0.5mm 0; text-align: center; background: #eee; }
+  td { border: 0.25mm solid #000; text-align: center; }
+  .blockrows td { height: 8mm; }
+  .lamprows td  { height: 8.2mm; font-size: 7pt; color: #bbb; }
+
+  .example { font-size: 6pt; color: #555; }
+
+  .ruled { border-bottom: 0.2mm solid #777; height: 7.5mm; }
+
+  .refbox { border: 0.25mm solid #777; border-radius: 1mm;
+            padding: 1mm 1.5mm; color: #333; }
+  .refbox h3 { font-size: 5.5pt; text-transform: uppercase;
+               letter-spacing: 0.2mm; margin-bottom: 0.5mm; }
+  .refbox table { table-layout: auto; }
+  .refbox td, .refbox th { border: none; font-size: 5.5pt; padding: 0.15mm 1mm;
+                           text-align: left; color: #333; background: none; }
+
+  @media screen {  /* preview niceties, no effect on print */
+    body { background: #777; }
+    .sheet { margin: 5mm auto; box-shadow: 0 2px 8px rgba(0,0,0,0.5); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============ FRONT card master ============ -->
+<template id="front">
+  <div class="inner">
+    <div class="cardhead">
+      <span class="t">YAK-52 FUEL TEST</span>
+      <span class="side">all times UTC &nbsp;·&nbsp; front 1/2</span>
+    </div>
+
+    <div class="sec">
+      <div class="row">
+        <div class="f"><span class="lbl">DATE (dd.mm.yyyy)</span>
+          <div class="comb">
+            <span class="cell"></span><span class="cell"></span>
+            <span class="sepc">.</span>
+            <span class="cell"></span><span class="cell"></span>
+            <span class="sepc">.</span>
+            <span class="cell"></span><span class="cell"></span><span class="cell"></span><span class="cell"></span>
+          </div>
+        </div>
+        <div class="f grow"><span class="lbl">SORTIE #</span><div class="box"></div></div>
+      </div>
+      <div class="row">
+        <div class="f"><span class="lbl">FROM</span>
+          <div class="comb"><span class="cell"></span><span class="cell"></span><span class="cell"></span><span class="cell"></span></div>
+        </div>
+        <div class="f"><span class="lbl">TO</span>
+          <div class="comb"><span class="cell"></span><span class="cell"></span><span class="cell"></span><span class="cell"></span></div>
+        </div>
+        <div class="f grow"><span class="lbl">OAT gnd °C</span><div class="box"></div></div>
+        <div class="f grow"><span class="lbl">QNH hPa</span><div class="box"></div></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h2>Target setting <span class="hint">— tick ONE (steady block)</span></h2>
+      <div class="tgt">
+        <span class="chk"><span class="cb"></span><span><span class="set">Cruise II</span> <span class="pow">59% · 670 abs</span></span></span>
+        <span class="chk"><span class="cb"></span><span><span class="set">Cruise I</span> <span class="pow">64% · 735 abs</span></span></span>
+        <span class="chk"><span class="cb"></span><span><span class="set">Rated II</span> <span class="pow">70% · +75</span></span></span>
+        <span class="chk"><span class="cb"></span><span><span class="set">Rated I</span> <span class="pow">82% · +95</span></span></span>
+        <span class="chk"><span class="cb"></span><span><span class="set">Extra A</span> <span class="pow">70% · 700 abs</span></span></span>
+        <span class="chk"><span class="cb"></span><span><span class="set">Extra B</span> <span class="pow">60% · 600 abs</span></span></span>
+        <span class="chk"><span class="cb"></span><span><span class="set">Climb profile</span> <span class="pow">80% · 800–850</span></span></span>
+        <span class="chk"><span class="cb"></span><span><span class="set">Other:</span></span><span class="box grow" style="height:4mm"></span></span>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h2>Fuel before <span class="hint">— fill to full, brim reference</span></h2>
+      <div class="row">
+        <div class="f"><span class="lbl">PUMP LITRES</span>
+          <div class="comb">
+            <span class="cell"></span><span class="cell"></span><span class="cell"></span>
+            <span class="sepc">,</span><span class="cell"></span>
+          </div>
+        </div>
+        <span class="chk" style="margin-bottom:1.5mm"><span class="cb"></span>brim ✓</span>
+        <div class="f grow"><span class="lbl">PUMP / SPOT</span><div class="box"></div></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h2>Times <span class="hint">(hh:mm UTC)</span></h2>
+      <div class="row">
+        <div class="f"><span class="lbl">ENGINE START</span>
+          <div class="comb"><span class="cell"></span><span class="cell"></span><span class="sepc">:</span><span class="cell"></span><span class="cell"></span></div>
+        </div>
+        <div class="f"><span class="lbl">TAXI</span>
+          <div class="comb"><span class="cell"></span><span class="cell"></span><span class="sepc">:</span><span class="cell"></span><span class="cell"></span></div>
+        </div>
+        <div class="f"><span class="lbl">TAKEOFF</span>
+          <div class="comb"><span class="cell"></span><span class="cell"></span><span class="sepc">:</span><span class="cell"></span><span class="cell"></span></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="f"><span class="lbl">POWER REDUCED</span>
+          <div class="comb"><span class="cell"></span><span class="cell"></span><span class="sepc">:</span><span class="cell"></span><span class="cell"></span></div>
+        </div>
+        <div class="f"><span class="lbl">TOP OF CLIMB</span>
+          <div class="comb"><span class="cell"></span><span class="cell"></span><span class="sepc">:</span><span class="cell"></span><span class="cell"></span></div>
+        </div>
+        <div class="f grow"><span class="lbl">TOC ALT ft</span><div class="box"></div></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h2>Steady test block <span class="hint">— constant alt / rpm / MAP, box or out-and-back</span></h2>
+      <table class="blockrows">
+        <colgroup>
+          <col style="width:13%"><col style="width:13%"><col style="width:10%">
+          <col style="width:12%"><col style="width:13%"><col style="width:13%">
+          <col style="width:10%"><col style="width:16%">
+        </colgroup>
+        <tr><th>START</th><th>END</th><th>RPM %</th><th>MAP torr</th><th>ALT ft</th><th>IAS km/h</th><th>OAT °C</th><th>HDGs</th></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      </table>
+    </div>
+
+    <div class="sec">
+      <div class="row">
+        <div class="f"><span class="lbl">LANDING</span>
+          <div class="comb"><span class="cell"></span><span class="cell"></span><span class="sepc">:</span><span class="cell"></span><span class="cell"></span></div>
+        </div>
+        <div class="f"><span class="lbl">ENGINE OFF</span>
+          <div class="comb"><span class="cell"></span><span class="cell"></span><span class="sepc">:</span><span class="cell"></span><span class="cell"></span></div>
+        </div>
+        <div class="f grow"><span class="lbl">LDG COUNT (if &gt;1)</span><div class="box"></div></div>
+      </div>
+    </div>
+
+    <div class="sec">
+      <h2>Fuel after <span class="hint">— same pump, same spot, same brim</span></h2>
+      <div class="row">
+        <div class="f"><span class="lbl">PUMP LITRES</span>
+          <div class="comb">
+            <span class="cell"></span><span class="cell"></span><span class="cell"></span>
+            <span class="sepc">,</span><span class="cell"></span>
+          </div>
+        </div>
+        <span class="chk" style="margin-bottom:1.5mm"><span class="cb"></span>same pump</span>
+        <span class="chk" style="margin-bottom:1.5mm"><span class="cb"></span>same spot</span>
+        <span class="chk" style="margin-bottom:1.5mm"><span class="cb"></span>brim ✓</span>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- ============ BACK card master ============ -->
+<template id="back">
+  <div class="inner">
+    <div class="cardhead">
+      <span class="t">LAMP TRANSITIONS</span>
+      <span class="side">sortie # ____ &nbsp;·&nbsp; back 2/2</span>
+    </div>
+
+    <div class="sec" style="flex:1 1 auto">
+      <h2>Log the MOMENT a lamp switches
+        <span class="hint">— e.g. 10:42 · R · 50→45 · other 50</span></h2>
+      <table class="lamprows">
+        <colgroup>
+          <col style="width:22%"><col style="width:14%">
+          <col style="width:34%"><col style="width:30%">
+        </colgroup>
+        <tr><th>TIME UTC</th><th>TANK</th><th>LAMP from → to</th><th>OTHER TANK shows</th></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;:</td><td>L&nbsp;/&nbsp;R</td><td>→</td><td></td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;:</td><td>L&nbsp;/&nbsp;R</td><td>→</td><td></td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;:</td><td>L&nbsp;/&nbsp;R</td><td>→</td><td></td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;:</td><td>L&nbsp;/&nbsp;R</td><td>→</td><td></td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;:</td><td>L&nbsp;/&nbsp;R</td><td>→</td><td></td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;:</td><td>L&nbsp;/&nbsp;R</td><td>→</td><td></td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;:</td><td>L&nbsp;/&nbsp;R</td><td>→</td><td></td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;:</td><td>L&nbsp;/&nbsp;R</td><td>→</td><td></td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;:</td><td>L&nbsp;/&nbsp;R</td><td>→</td><td></td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;:</td><td>L&nbsp;/&nbsp;R</td><td>→</td><td></td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;:</td><td>L&nbsp;/&nbsp;R</td><td>→</td><td></td></tr>
+        <tr><td>&nbsp;&nbsp;&nbsp;:</td><td>L&nbsp;/&nbsp;R</td><td>→</td><td></td></tr>
+      </table>
+      <div class="example" style="margin-top:0.8mm">
+        A lamp switch is a precise fuel fix — “which lamp is on” is not.
+      </div>
+    </div>
+
+    <div class="sec">
+      <h2>Events / remarks <span class="hint">(time + note: power changes, alt changes, go-around …)</span></h2>
+      <div class="ruled"></div>
+      <div class="ruled"></div>
+      <div class="ruled"></div>
+      <div class="ruled"></div>
+    </div>
+
+    <div class="refbox">
+      <h3>Power settings reference</h3>
+      <table>
+        <tr>
+          <td><b>T/O</b> 99% · +125</td>
+          <td><b>Rated I</b> 82% · +95</td>
+          <td><b>Rated II</b> 70% · +75</td>
+        </tr>
+        <tr>
+          <td><b>Cruise I</b> 64% · 735a</td>
+          <td><b>Cruise II</b> 59% · 670a</td>
+          <td><b>Extra</b> 70/700a · 60/600a</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+</template>
+
+<script>
+  // Build page 1 (three fronts) and page 2 (three backs).
+  // Backs are identical, so column order needs no mirroring; duplex
+  // "flip on short edge" keeps them upright behind the fronts.
+  function makeSheet(tplId, note) {
+    const sheet = document.createElement('div');
+    sheet.className = 'sheet';
+    for (const x of ['99mm', '198mm']) {
+      const v = document.createElement('div');
+      v.className = 'cut-v'; v.style.left = x; sheet.appendChild(v);
+    }
+    for (const y of ['18.5mm', '191.5mm']) {
+      const h = document.createElement('div');
+      h.className = 'cut-h'; h.style.top = y; sheet.appendChild(h);
+    }
+    const n = document.createElement('div');
+    n.className = 'waste-note'; n.style.top = '6mm';
+    n.textContent = note; sheet.appendChild(n);
+
+    const tpl = document.getElementById(tplId);
+    for (let i = 0; i < 3; i++) {
+      const card = document.createElement('div');
+      card.className = 'card c' + i;
+      card.appendChild(tpl.content.cloneNode(true));
+      sheet.appendChild(card);
+    }
+    document.body.appendChild(sheet);
+  }
+  makeSheet('front',
+    'Yak-52 fuel test kneeboard — print 100% scale, no margins, duplex FLIP ON SHORT EDGE, cut on dashed lines (cards 99 × 173 mm)');
+  makeSheet('back',
+    'Back side — aligns behind the fronts with duplex "flip on short edge"');
+</script>
+</body>
+</html>

@@ -1,0 +1,41 @@
+# Aircraft + estimation model configuration (Yak-52, modified M-14P 420-450 hp)
+
+aircraft:
+  full_fuel_l: 120          # 2 x 60 L wing tanks (collector ~5 L not counted)
+  full_fuel_sigma_l: 1.0    # brim-reference repeatability
+  full_fuel_clip_l: [116.5, 121.5]
+  lamp_scale: [60, 50, 45, 40, 35, 30, 25, 20, 15, 12]   # per tank
+
+model:
+  refuel_sigma_l: 1.5       # pump meter + brim repeatability
+  gauge_slack_lo: 10        # combined reading S -> true in [S-lo, S+hi]
+  gauge_slack_hi: 12
+  gauge_sigma_l: 2.0        # softness of the interval edges
+  lamp_delta_max: 10        # early-switch offset per lamp, uniform [0, max]
+  lamp_sigma_l: 1.0         # sharpness of a lamp-transition fix
+  descent_factor: [0.55, 1.0]   # descent burn as fraction of last cruise rate
+  takeoff_min: [0.5, 1.5]       # full-power minutes per takeoff (if unmeasured)
+  descent_min: [6, 10]          # descent+pattern minutes (if unmeasured)
+  samples: 4000000
+
+# Burn-rate priors, L/h: uniform [lo, hi], or {between: [a, b]} for a
+# rate uniformly between two other settings' sampled rates.
+# Settings that appear in no sortie are left out of the joint model and
+# reported as prior-only.
+priors:
+  ground:        [6, 30]
+  takeoff:       [110, 200]
+  climb-80:      [70, 150]
+  rated-1:       [60, 180]
+  rated-2:       [40, 150]
+  extra-70-700:  {between: [cruise-64, climb-80]}
+  cruise-64:     [35, 95]
+  cruise-59:     [30, 85]
+  extra-60-600:  [20, 80]
+
+# Each chain lists settings in strictly increasing burn order
+ordering:
+  - [cruise-59, cruise-64, climb-80, takeoff]
+  - [extra-60-600, cruise-59]
+  - [cruise-64, extra-70-700, climb-80]
+  - [cruise-64, rated-2, rated-1, takeoff]

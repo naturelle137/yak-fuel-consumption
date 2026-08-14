@@ -1,0 +1,25 @@
+# Personal flight data — never published
+data/
+incoming/
+skydemon-logs/
+
+# Personal analysis artifacts
+*.pptx
+*.xlsx
+fuel-burn-estimation.py
+
+# Scans anywhere in the tree
+*.jpg
+*.jpeg
+*.png
+*.pdf
+*.HEIC
+*.heic
+
+# Python
+__pycache__/
+*.pyc
+
+# Editor / OS noise
+.DS_Store
+*~
