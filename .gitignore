@@ -16,6 +16,9 @@ fuel-burn-estimation.py
 *.HEIC
 *.heic
 
+# ...except the generated blank kneeboard, which ships with the repo
+!kneeboard/kneeboard.pdf
+
 # Python
 __pycache__/
 *.pyc
